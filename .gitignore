@@ -1,0 +1,11 @@
+# Ignore virtual environment
+venv/
+env/
+Lib/
+Scripts/
+
+# You might want to ignore other files such as:
+__pycache__/
+*.pyc
+.DS_Store
+# And other files that are not needed in the repository
