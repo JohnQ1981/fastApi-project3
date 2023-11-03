@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import FastAPI, Body
+from fastapi import FastAPI, Path, Query
 from pydantic import BaseModel, Field
 
 app = FastAPI()
@@ -63,14 +63,14 @@ async def read_all_books():
 
 # endpoint that will allow to find book by id
 @app.get("/books/{book_id}")
-async def find_book_by_id(book_id: int):
+async def find_book_by_id(book_id: int = Path(gt=0)):
     for book in BOOKS:
         if book.id == book_id:
             return book
         
 #Endpoint that fetch books by rating, filter by rating
 @app.get("/books/")
-async def read_book_by_rating(book_rating:int):
+async def read_book_by_rating(book_rating:int = Query(gt=0, lt=6)):
     books_to_return = []
     for book in BOOKS:
         if book.rating == book_rating:
@@ -87,7 +87,7 @@ Enhance each Book to now have a published_date
 
 Then create a new GET Request method to filter by published_date"""
 @app.get("/books/publish/")
-async def get_books_by_date(published_date: int):
+async def get_books_by_date(published_date: int = Query(gt=1990, lt=2024)):
     return_books = []
     for book in BOOKS:
         if book.published_date == published_date:
@@ -111,7 +111,7 @@ async def update_book(book: BookRequest):
 
 #end point that deletes book by id
 @app.delete("/books/{book_id}")
-async def delet_book_by_id(book_id: int):
+async def delet_book_by_id(book_id: int = Path(gt=0)):
     for i in range(len(BOOKS)):
         if BOOKS[i].id == book_id:
             BOOKS.pop(i)
