@@ -27,7 +27,7 @@ class BookRequest(BaseModel):
     author: str = Field(min_length=1)
     description: str = Field(min_length=1, max_length=100)
     rating: int = Field(gt=0, lt=6)
-    published_date: int = Field(gt=0, lt=2024)
+    published_date: int = Field(gt=1990, lt=2024)
     
     class Config:
         json_schema_extra = {
@@ -39,10 +39,6 @@ class BookRequest(BaseModel):
                 'published_date': 1995
             }
         }
-    
-
-
-        
 
 
 BOOKS =[
@@ -73,7 +69,7 @@ async def find_book_by_id(book_id: int):
             return book
         
 #Endpoint that fetch books by rating, filter by rating
-@app.get("/books/find/")
+@app.get("/books/")
 async def read_book_by_rating(book_rating:int):
     books_to_return = []
     for book in BOOKS:
@@ -90,7 +86,7 @@ Add a new field to Book and BookRequest called published_date: int (for example,
 Enhance each Book to now have a published_date
 
 Then create a new GET Request method to filter by published_date"""
-@app.get("/books/")
+@app.get("/books/publish/")
 async def get_books_by_date(published_date: int):
     return_books = []
     for book in BOOKS:
