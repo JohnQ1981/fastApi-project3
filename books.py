@@ -1,6 +1,7 @@
 from typing import Optional
-from fastapi import FastAPI, Path, Query
+from fastapi import FastAPI, Path, Query, HTTPException
 from pydantic import BaseModel, Field
+from starlette import status
 
 app = FastAPI()
 
@@ -52,7 +53,7 @@ BOOKS =[
 ]
 
 
-@app.get("/books")
+@app.get("/books", status_code=status.HTTP_200_OK)
 async def read_all_books():
     return BOOKS
 
@@ -62,14 +63,15 @@ async def read_all_books():
 #     BOOKS.append(book_request)
 
 # endpoint that will allow to find book by id
-@app.get("/books/{book_id}")
+@app.get("/books/{book_id}", status_code=status.HTTP_200_OK)
 async def find_book_by_id(book_id: int = Path(gt=0)):
     for book in BOOKS:
         if book.id == book_id:
             return book
+    raise HTTPException(status_code=404, detail='Item not found.')
         
 #Endpoint that fetch books by rating, filter by rating
-@app.get("/books/")
+@app.get("/books/", status_code=status.HTTP_200_OK)
 async def read_book_by_rating(book_rating:int = Query(gt=0, lt=6)):
     books_to_return = []
     for book in BOOKS:
@@ -86,7 +88,7 @@ Add a new field to Book and BookRequest called published_date: int (for example,
 Enhance each Book to now have a published_date
 
 Then create a new GET Request method to filter by published_date"""
-@app.get("/books/publish/")
+@app.get("/books/publish/", status_code=status.HTTP_200_OK)
 async def get_books_by_date(published_date: int = Query(gt=1990, lt=2024)):
     return_books = []
     for book in BOOKS:
@@ -96,27 +98,35 @@ async def get_books_by_date(published_date: int = Query(gt=1990, lt=2024)):
 
 
 #Post method to create a book
-@app.post("/create_book")
+@app.post("/create_book", status_code=status.HTTP_201_CREATED)
 async def create_book(book_request: BookRequest):
     new_book =Book(**book_request.model_dump())
     print(type(new_book))
     BOOKS.append(find_book_id(new_book))
 
 #create api endpoint that updates  books
-@app.put("/books/update_book")
+@app.put("/books/update_book", status_code=status.HTTP_204_NO_CONTENT)
 async def update_book(book: BookRequest):
+    book_updated = False
     for i in range(len(BOOKS)):
         if BOOKS[i].id == book.id:
             BOOKS[i] = book
+            book_updated = True
+    if not book_updated:
+        raise HTTPException(status_code=404, detail='Item not found so Book is not updated')
+
 
 #end point that deletes book by id
-@app.delete("/books/{book_id}")
-async def delet_book_by_id(book_id: int = Path(gt=0)):
+@app.delete("/books/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_book_by_id(book_id: int = Path(gt=0)):
+    book_deleted = False
     for i in range(len(BOOKS)):
         if BOOKS[i].id == book_id:
             BOOKS.pop(i)
+            book_deleted = True
             break
-
+    if not book_deleted:
+        raise HTTPException(status_code=404, detail='Item not found and/or Book not deleted')
 
 def find_book_id(book: Book):
     book.id = 1 if len(BOOKS) == 0 else BOOKS[-1].id + 1
